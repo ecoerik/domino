@@ -547,8 +547,23 @@
                     // 3. Map remaining columns
                     for (let j = 2; j < headerColumns.length; j++) {
                         const colName = headerColumns[j];
-                        newRow.push(getValue(rowDef.code, colName));
+                        let val = getValue(rowDef.code, colName);
+                        
+                        // Korrektur: Wenn es eine Zahl ist, runden wir sie auf 6 signifikante Stellen
+                        // Das reicht für die Präzision, verhindert aber "Zahlen-Monster"
+                        if (typeof val === 'number') {
+                            if (Math.abs(val) < 0.000001 && val !== 0) {
+                                // Für sehr kleine Zahlen: wissenschaftliche Notation mit 5 Nachkommastellen
+                                val = parseFloat(val.toPrecision(6));
+                            } else {
+                                // Normal runden auf 6 Nachkommastellen
+                                val = Math.round(val * 1000000) / 1000000;
+                            }
+                        }
+                        newRow.push(val);
                     }
+
+                    
                     sheetData.push(newRow);
                 });
                 return sheetData;
@@ -736,4 +751,5 @@
         }
     </script>
 </body>
+
 </html>
